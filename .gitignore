@@ -1,0 +1,21 @@
+# 忽略 *.bak文件
+*.bak
+
+# 忽略 c/c++ 编译后的文件
+*.obj
+
+# 忽略 Java编译后的文件
+*.class
+
+# 忽略 word创建的临时文件
+~*.doc
+~*.docx
+
+# 忽略debug目录下的所有文件
+debug/  
+
+# 忽略.idea目录下的所有文件
+.idea/
+
+#忽略pyc反编译文件
+__pycache__/
