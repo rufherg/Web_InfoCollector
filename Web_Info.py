@@ -27,7 +27,7 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         sys.argv.append('-h')
 
-    parser = argparse.ArgumentParser(description='Port Scanner',add_help=True)
+    parser = argparse.ArgumentParser(description='Web Information Collector',add_help=True)
     parser.add_argument('-u','--url',default=None,help='目标URL',type=str)
     parser.add_argument('-p','--port',default="1-65535",help='待扫描的端口范围(默认1-65535)')
     parser.add_argument('-m','--max',default=None,help='最高线程模式(max=100)',action="store_true")
