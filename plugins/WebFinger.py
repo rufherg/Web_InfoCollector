@@ -7,14 +7,18 @@
 @About: 
 '''
 
-from socket import *
+import sys
+import os
+import re
 import requests
-import lxml,random
-from bs4 import BeautifulSoup
-import sys,os,re
+import lxml
+import random
 import sqlite3
 import concurrent.futures
 import threading
+
+from socket import *
+from bs4 import BeautifulSoup
 
 class WebFinger():
     def __init__(self, host, flag):
@@ -69,14 +73,14 @@ class WebFinger():
         return headers
     
     def count(self):
-        with sqlite3.connect(os.getcwd() + "\cms_finger.db") as conn:
+        with sqlite3.connect(os.getcwd() + "/../database/cms_finger.db") as conn:
             cursor = conn.cursor()
             result = cursor.execute('select count(id) from `fofa`')
         for row in result:
             return row[0]
 
     def check(self, id):
-        with sqlite3.connect(os.getcwd() + "\cms_finger.db") as conn:
+        with sqlite3.connect(os.getcwd() + "/../database/cms_finger.db") as conn:
             cursor = conn.cursor()
             result = cursor.execute('select name,keys from fofa where id=\'{}\''.format(id))
             for row in result:
