@@ -19,3 +19,9 @@ debug/
 
 #忽略pyc反编译文件
 __pycache__/
+
+#忽略redis数据库
+redis_dump.db
+
+#忽略redis日志
+redis/redis.log
