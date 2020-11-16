@@ -25,7 +25,7 @@ def PortScanner_T(url, start, end, flag):
 
 @app.task
 def WebFinger_T(port, url, flag):
-    print("-"*20 + "Start WebFinger Matching" + "-"*20)
+    print("-"*21 + "Start WebFinger Matching" + "-"*21)
     for i in port:
         host = url + ":" + str(i)
         print(host)
@@ -40,4 +40,29 @@ def WebFinger_T(port, url, flag):
             print("[+] fofa_banner: " + result)
     except:
         pass
-    print("-"*22 + "End WebFinger Matching" + "-"*20)
+    print("-"*23 + "End WebFinger Matching" + "-"*21)
+
+@app.task
+def CDN_WAF_Finger_T():
+    print("-"*19 + "Start CDN/WAF Finger Matching" + "-"*18)
+    print("-"*20 + "End CDN/WAF Finger Matching" + "-"*19)
+
+@app.task
+def SubdomainScan_T():
+    print("-"*22 + "Start Subdomain Scan" + "-"*22)
+    print("-"*23 + "End Subdomain Scan" + "-"*23)
+
+@app.task
+def Whois_Scan_T():
+    print("-"*24 + "Start Whois Scan" + "-"*24)
+    print("-"*25 + "End Whois Scan" + "-"*25)
+    
+@app.task
+def CIDR_Scan_T():
+    print("-"*24 + "Start CIDR Scan" + "-"*25)
+    print("-"*25 + "End CIDR Scan" + "-"*26)
+
+@app.task
+def GSIL_Scan_T():
+    print("-"*24 + "Start GSIL Scan" + "-"*25)
+    print("-"*25 + "End GSIL Scan" + "-"*26)

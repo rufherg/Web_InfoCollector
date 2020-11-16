@@ -24,4 +24,4 @@ __pycache__/
 redis_dump.db
 
 #忽略redis日志
-redis/redis.log
+redis.log
