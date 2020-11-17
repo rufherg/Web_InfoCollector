@@ -32,15 +32,17 @@ def WebFinger_T(port, url, flag):
     #host = url
     try:
         WFinger = WebFinger(host, flag)
-        if WFinger.thread():
+        if WFinger.threading():
             print("[+] " + WFinger.host +" use:")
             result = ""
-            for j in WFinger.finger:
+            for j in WFinger.result:
                 result += j + "  "
             print("[+] fofa_banner: " + result)
-    except:
-        pass
+    except Exception as e:
+        raise(e)
+
     print("-"*23 + "End WebFinger Matching" + "-"*21)
+    return WFinger.result
 
 @app.task
 def CDN_WAF_Finger_T():

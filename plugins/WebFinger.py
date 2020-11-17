@@ -23,7 +23,7 @@ from bs4 import BeautifulSoup
 class WebFinger():
     def __init__(self, host, flag):
         self.host = "http://" + host
-        self.finger = []
+        self.result = []
         self.re_title = re.compile(r'title="(.*)"')
         self.re_header = re.compile(r'header="(.*)"')
         self.re_body = re.compile(r'body="(.*)"')
@@ -36,14 +36,14 @@ class WebFinger():
     requests.packages.urllib3.disable_warnings()
 
     def run(self):
-        print("-"*20 + "Start WebFinger Matching" + "-"*20)
-        if self.thread():
+        print("-"*21 + "Start WebFinger Matching" + "-"*21)
+        if self.threading():
             print("[+] " + self.host +" use:")
             result = ""
-            for i in self.finger:
+            for i in self.result:
                 result += i + "  "
             print("[+] fofa_banner: " + result)
-            print("-"*22 + "End WebFinger Matching" + "-"*20)
+            print("-"*23 + "End WebFinger Matching" + "-"*21)
 
     def get_data(self):
         data = requests.get(self.host, headers=self.set_header(), timeout=3, verify=False)
@@ -73,82 +73,88 @@ class WebFinger():
         return headers
     
     def count(self):
-        with sqlite3.connect(os.getcwd() + "/../database/cms_finger.db") as conn:
+        with sqlite3.connect(os.getcwd().replace("plugins","") + "/database/cms_finger.db") as conn:
             cursor = conn.cursor()
             result = cursor.execute('select count(id) from `fofa`')
         for row in result:
             return row[0]
 
     def check(self, id):
-        with sqlite3.connect(os.getcwd() + "/../database/cms_finger.db") as conn:
+        with sqlite3.connect(os.getcwd().replace("plugins","") + "/database/cms_finger.db") as conn:
             cursor = conn.cursor()
             result = cursor.execute('select name,keys from fofa where id=\'{}\''.format(id))
             for row in result:
                 return row[0], row[1]
     
     def check_key(self, key, header, body, title):
-        if 'title="' in key:
-            if re.findall(self.re_title, key)[0].lower() in title.lower():
+        try:
+            if 'title="' in key:
+                if re.findall(self.re_title, key)[0].lower() in title.lower():
+                        return True
+            elif 'body="' in key:
+                if re.findall(self.re_body, key)[0] in body: 
                     return True
-        elif 'body="' in key:
-            if re.findall(self.re_body, key)[0] in body: 
-                return True
-        else:
-            if re.findall(self.re_header, key)[0] in header: 
-                return True
+            else:
+                if re.findall(self.re_header, key)[0] in header: 
+                    return True
+        except:
+            return False
 
     def match(self, id, header, body, title):
-        name, key = self.check(id)
-        if '(' not in key:
-            if '&&' not in key:
-                if '||' not in key:
-                    if self.check_key(key, header, body, title):
-                        self.finger.append(name)
-                elif '||' in key:
-                    for re in key.split('||'):
-                        if self.check_key(re, header, body, title):
-                            self.finger.append(name)
-                            break
-            elif '&&' in key and '||' not in key:
-                times = 0
-                for re in key.split('&&'):
-                    if self.check_key(re, header, body, title):
-                        times += 1
-                if times == len(key.split('&&')):
-                    self.finger.append(name)
-        else:
-            if '&&' in re.findall(self.re_bracket, key)[0]:
-                for re in key.split('||'):
-                    if '&&' in re:
-                        times = 0
-                        for _re in key.split('&&'):
-                            if self.check_key(_re, header, body, title):
-                                times += 1
-                        if times == len(key.split('&&')):
-                            self.finger.append(name)
-                            break
-                    else:
-                        if self.check_key(re, header, body, title):
-                            self.finger.append(name)
-                            break
-            else:
-                for re in key.split('&&'):
-                    times = 0
-                    if '||' in re:
-                        for _re in key.split('||'):
-                            if self.check_key(_re, title, body, header):
-                                times += 1
+        try:
+            name, key = self.check(id)
+            if '(' not in key:
+                if '&&' not in key:
+                    if '||' not in key:
+                        if self.check_key(key, header, body, title):
+                            self.result.append(name)
+                    elif '||' in key:
+                        for re_match in key.split('||'):
+                            if self.check_key(re_match, header, body, title):
+                                self.result.append(name)
                                 break
-                    else:
-                        if self.check_key(re, title, body, header):
+                elif '&&' in key and '||' not in key:
+                    times = 0
+                    for re_match in key.split('&&'):
+                        if self.check_key(re_match, header, body, title):
                             times += 1
-                if times == len(key.split('&&')):
-                    self.finger.append(name)
+                    if times == len(key.split('&&')):
+                        self.result.append(name)
+            else:
+                if '&&' in re.findall(self.re_bracket, key)[0]:
+                    for re_match in key.split('||'):
+                        if '&&' in re_match:
+                            times = 0
+                            for _re in key.split('&&'):
+                                if self.check_key(_re, header, body, title):
+                                    times += 1
+                            if times == len(key.split('&&')):
+                                self.result.append(name)
+                                break
+                        else:
+                            if self.check_key(re_match, header, body, title):
+                                self.result.append(name)
+                                break
+                else:
+                    for re_match in key.split('&&'):
+                        times = 0
+                        if '||' in re_match:
+                            for _re in key.split('||'):
+                                if self.check_key(_re, title, body, header):
+                                    times += 1
+                                    break
+                        else:
+                            if self.check_key(re, title, body, header):
+                                times += 1
+                    if times == len(key.split('&&')):
+                        self.result.append(name)
+        except:
+            pass
         
     def thread(self) -> bool:
         header, body, title = self.get_data()
         threadpool = concurrent.futures.ThreadPoolExecutor(max_workers = self.threads)
-        futures = (threadpool.submit(self.match, sql, header, body, title) for sql in range(0, int(self.count())))
+        futures = (threadpool.submit(self.match, sql, header, body, title) for sql in range(1, int(self.count())))
         for i in concurrent.futures.as_completed(futures):
             pass
         return True
@@ -161,7 +167,7 @@ class WebFinger():
             header, body, title = self.get_data()
             semaphore = threading.BoundedSemaphore(self.threads)
             thread_list = []
-            for sql in range(0, int(self.count())):
+            for sql in range(1, int(self.count())):
                 thread = threading.Thread(target=self.match, args=(sql, header, body, title))
                 thread_list.append(thread)
             for th in thread_list:

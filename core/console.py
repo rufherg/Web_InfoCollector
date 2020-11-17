@@ -20,11 +20,14 @@ import datetime,time
 from celery_app.tasks import *
 
 def init():
-    os.system('start powershell -Command ^&{redis-server config/redis.conf}')
-    os.system('start powershell -Command ^&{celery -A celery_app worker -l info -P eventlet}')
+    os.system('start powershell -Command ^&{celery -A celery_app worker -l info -P=solo}')
     #os.system('start cmd /k celery -A celery_app worker -l info -P eventlet')  --CMD
     #os.system('gnome-terminal -x bash -c "celery -A celery_app worker -l info") --Ubuntu(未测试)
     #os.system("gnome-terminal -e 'celery -A celery_app worker -l info'") --CentOS(未测试)
+
+def init_redis():
+    os.system('start powershell -Command ^&{redis-server config/redis.conf}')
+    #os.system('gnome-terminal -x bash -c "redis-server config/redis.conf") --Ubuntu(未测试)
 
 def run(url, start, end, flag):
     result = (PortScanner_T.s(url, start, end, flag) | WebFinger_T.s(url, flag))()
@@ -44,6 +47,7 @@ def Console():
     parser.add_argument('-u','--url',dest="url",default=None,help='目标URL',type=str)
     parser.add_argument('-p','--port',dest="port",default="1-65535",help='待扫描的端口范围(默认1-65535)')
     parser.add_argument('-m','--max',dest="max",default=None,help='最高线程模式(max=100)',action="store_true")
+    parser.add_argument('-i','--init',dest="init",default=None,help='初始化环境(Redis/Celery/All)[小写]',type=str)
     
     #主动式收集模块
     active_modules.add_argument('-cms',dest="cms",help="Web应用指纹识别",action="store_true")
@@ -86,30 +90,39 @@ def Console():
         except:
             start = args.port
             end = args.port
-    
-    init()
+
+    if args.init == 'redis':
+        init_redis()
+    elif args.init == 'celery':
+        init()
+    elif args.init == 'all':
+        init()
+        init_redis()
+
     start_time = datetime.datetime.now()
 
-    if args.cms:
-        WebFinger_T.s(url, flag)
-
     if args.portscan:
-        PortScanner_T.s(url, start, end, flag)
+        if args.cms:
+            # WebFinger_T(port,url,flag)
+            result = (PortScanner_T.s(url, start, end, flag) | WebFinger_T.s(url, flag))()
+            print(result.get())
+        else:
+            PortScanner_T.delay(url, start, end, flag)
 
     if args.cdnwaf:
-        CDN_WAF_Finger_T.s()
+        CDN_WAF_Finger_T.delay()
 
     if args.subdomain:
-        SubdomainScan_T.s()
+        SubdomainScan_T.delay()
 
     if args.whois:
-        Whois_Scan_T.s()
+        Whois_Scan_T.delay()
     
     if args.cidr:
-        CIDR_Scan_T.s()
+        CIDR_Scan_T.delay()
 
     if args.gsil:
-        GSIL_Scan_T.s()
+        GSIL_Scan_T.delay()
 
     spend_time = (datetime.datetime.now() - start_time).seconds
     print("Total time: " + str(spend_time) + " seconds")
