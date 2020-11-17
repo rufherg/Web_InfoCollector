@@ -56,7 +56,7 @@ def Console():
 
     #被动式收集模块
     passive_modules.add_argument('-subdomain',dest="subdomain",help="子域名收集")
-    passive_modules.add_argument('-whois', dest="whois",help="Whois查询")
+    passive_modules.add_argument('-whois', dest="whois",help="Whois查询",action="store_true")
     passive_modules.add_argument('-cidr', dest="cidr",help="C段扫描")
     passive_modules.add_argument('-gsil',dest="gsil",help="Github敏感信息收集")
 
@@ -103,9 +103,8 @@ def Console():
 
     if args.portscan:
         if args.cms:
-            # WebFinger_T(port,url,flag)
             result = (PortScanner_T.s(url, start, end, flag) | WebFinger_T.s(url, flag))()
-            print(result.get())
+            # print(result.get())
         else:
             PortScanner_T.delay(url, start, end, flag)
 
@@ -116,7 +115,7 @@ def Console():
         SubdomainScan_T.delay()
 
     if args.whois:
-        Whois_Scan_T.delay()
+        Whois_Scan_T.delay(url)
     
     if args.cidr:
         CIDR_Scan_T.delay()

@@ -14,6 +14,7 @@ from celery import group
 from celery_app.celery import app
 from plugins.PortScanner import *
 from plugins.WebFinger import *
+from plugins.Whois_Scan import *
 
 @app.task
 def PortScanner_T(url, start, end, flag):
@@ -55,8 +56,16 @@ def SubdomainScan_T():
     print("-"*23 + "End Subdomain Scan" + "-"*23)
 
 @app.task
-def Whois_Scan_T():
+def Whois_Scan_T(url):
     print("-"*24 + "Start Whois Scan" + "-"*24)
+    print("[+]target: " + url)
+    WScan = Whois_Scan(url)
+    result = WScan.IP_rdap()
+    print("[+]asn: AS"+result["asn"])
+    print("[+]asn_cidr: "+result["asn_cidr"])
+    print("[+]asn_registry: "+result["asn_registry"])
+    print("[+]asn_country_code: "+result["asn_country_code"])
+    print("[+]asn_description: "+result["asn_description"])
     print("-"*25 + "End Whois Scan" + "-"*25)
     
 @app.task

@@ -1,3 +1,4 @@
 celery==4.4.0rc4
 redis==3.2.0
-eventlet==0.25.1
+# eventlet==0.25.1
+ipwhois==1.2.0
