@@ -16,6 +16,7 @@ from plugins.PortScanner import *
 from plugins.WebFinger import *
 from plugins.Whois_Scan import *
 from plugins.CDN_WAF_Finger import *
+from plugins.C_Scanner import *
 
 @app.task
 def PortScanner_T(url, start, end, flag):
@@ -83,10 +84,17 @@ def Whois_Scan_T(url):
     print("[+]asn_description: "+result["asn_description"])
     print("-"*25 + "End Whois Scan" + "-"*25)
     
+    return result
+    
 @app.task
-def CIDR_Scan_T():
-    print("-"*24 + "Start CIDR Scan" + "-"*25)
-    print("-"*25 + "End CIDR Scan" + "-"*26)
+def C_Scanner_T(url,flag):
+    print("-"*24 + "Start C-net Scan" + "-"*24)
+    CScan = C_Scanner(url,flag)
+    if CScan.threading():
+        result = CScan.result
+    print("-"*25 + "End C-net Scan" + "-"*26)
+
+    return result
 
 @app.task
 def GSIL_Scan_T():

@@ -36,8 +36,6 @@ class PortScanner():
             if sock.connect_ex((self.host, port)) == 0:
                 print("[+]Host:" + self.host + " is opening " + str(port))
                 self.result.append(port)
-            else:
-                pass
         except:
             pass
 
@@ -63,7 +61,7 @@ class PortScanner():
             th.join()
         return True
 
-if __name__ == "__main__":  
+if __name__ == "__main__":
     if len(sys.argv) == 1:
         sys.argv.append('-h')
 

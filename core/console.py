@@ -57,7 +57,7 @@ def Console():
     #被动式收集模块
     passive_modules.add_argument('-subdomain',dest="subdomain",help="子域名收集")
     passive_modules.add_argument('-whois', dest="whois",help="Whois查询",action="store_true")
-    passive_modules.add_argument('-cidr', dest="cidr",help="C段扫描")
+    passive_modules.add_argument('-cscan', dest="cscan",help="C段扫描",action="store_true")
     # passive_modules.add_argument('-gsil',dest="gsil",help="Github敏感信息收集")
 
     #数据处理模块
@@ -103,27 +103,54 @@ def Console():
 
     if args.portscan:
         result = PortScanner_T.delay(url, start, end, flag).get()
+        result.sort()
+
+        print("-"*20 + "Port Scan Result" + "-"*20)
+        for i in result:
+            print("[+]Host:" + url + " is opening " + str(i))
 
     if args.cms:
         if args.portscan:
-            WebFinger_T.delay(result,url, flag)
+            WF_result = WebFinger_T.delay(result,url, flag).get()
         else:
-            WebFinger_T.delay([i for i in range(start,end + 1)],url, flag)
+            WF_result = WebFinger_T.delay([i for i in range(start,end + 1)],url, flag).get()
+
+        print("-"*20 + "WebFinger Result" + "-"*20)
+        print("[+]Target: " + url)
+        print("[+]Banner: " + (i+" " for i in WF_result))
 
     if args.cdnwaf:
         if args.portscan:
-            CDN_WAF_Finger_T.delay(result,url)
+            CW_result = CDN_WAF_Finger_T.delay(result,url).get()
         else:
-            CDN_WAF_Finger_T.delay([i for i in range(start,end + 1)],url)
+            CW_result = CDN_WAF_Finger_T.delay([i for i in range(start,end + 1)],url).get()
+
+        print("-"*21 + "CDN/WAF Result" + "-"*21)
+        print("[+]Target: " + url)
+        for i in CW_result:
+            result = i + " "
+        print("[+]Banner: " + result)
 
     if args.subdomain:
         SubdomainScan_T.delay()
 
     if args.whois:
-        Whois_Scan_T.delay(url)
+        WS_result = Whois_Scan_T.delay(url).get()
+
+        print("-"*22 + "Whois Result" + "-"*22)
+        print("[+]Target: " + url)
+        print("[+]asn: AS" + WS_result["asn"])
+        print("[+]asn_cidr: " + WS_result["asn_cidr"])
+        print("[+]asn_registry: " + WS_result["asn_registry"])
+        print("[+]asn_country_code: " + WS_result["asn_country_code"])
+        print("[+]asn_description: " + WS_result["asn_description"])
     
-    if args.cidr:
-        CIDR_Scan_T.delay()
+    if args.cscan:
+        CS_result = C_Scanner_T.delay(url,flag).get()
+
+        print("-"*20 + "C-net Scan Result" + "-"*21)
+        for i in sorted(CS_result,key=socket.inet_aton):
+            print("[+]Host: " + i + " is alive")        
 
     # if args.gsil:
     #     GSIL_Scan_T.delay()
