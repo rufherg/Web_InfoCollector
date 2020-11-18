@@ -12,17 +12,19 @@ Usage:
 '''
 
 import os
+import sys
 import requests
 import urllib3
 import json
 
+sys.path.append(os.getcwd().replace("plugins",""))
 from plugins.Proxy import Proxy
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class CDN_WAF_Finger():
     def __init__(self,url):
-        self.url = url
+        self.url = "http://" + url
         self.header = self.getHeaders()
 
     def getHeaders(self):
@@ -91,7 +93,7 @@ class CDN_WAF_Finger():
 
     def useCDN_WAF(self):
         key = []
-        self.json = json.load(open(os.getcwd().replace("plugins","") + "/database/cdnwaf.json",encoding='utf-8'))
+        self.json = json.load(open(os.getcwd().replace("plugins","") + "./database/cdnwaf.json",encoding='utf-8'))
         try:
             sdict = self.header
             for skey in sdict:

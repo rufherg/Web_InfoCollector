@@ -15,6 +15,7 @@ from celery_app.celery import app
 from plugins.PortScanner import *
 from plugins.WebFinger import *
 from plugins.Whois_Scan import *
+from plugins.CDN_WAF_Finger import *
 
 @app.task
 def PortScanner_T(url, start, end, flag):
@@ -29,26 +30,40 @@ def WebFinger_T(port, url, flag):
     print("-"*21 + "Start WebFinger Matching" + "-"*21)
     for i in port:
         host = url + ":" + str(i)
-        print(host)
-    #host = url
-    try:
-        WFinger = WebFinger(host, flag)
-        if WFinger.threading():
-            print("[+] " + WFinger.host +" use:")
-            result = ""
-            for j in WFinger.result:
-                result += j + "  "
-            print("[+] fofa_banner: " + result)
-    except Exception as e:
-        raise(e)
+        #host = url
+        try:
+            WFinger = WebFinger(host, flag)
+            if WFinger.threading():
+                print("[+] " + WFinger.host +" use:")
+                result = ""
+                for j in WFinger.result:
+                    result += j + "  "
+                print("[+] fofa_banner: " + result)
+        except Exception as e:
+            raise(e)
 
     print("-"*23 + "End WebFinger Matching" + "-"*21)
     return WFinger.result
 
 @app.task
-def CDN_WAF_Finger_T():
+def CDN_WAF_Finger_T(port,url):
     print("-"*19 + "Start CDN/WAF Finger Matching" + "-"*18)
+    for i in port:
+        host = url + ":" + str(i)
+        try:
+            CWFinger = CDN_WAF_Finger(host)
+            CWFinger.useCDN_WAF()
+            if len(CWFinger.result) != 0:
+                print("[+] " + host + " use:")
+                result = ""
+                for j in CWFinger.result:
+                        result += j + "  "
+                print("[+] CDN/WAF: " + result)
+        except Exception as e:
+            raise(e)
+
     print("-"*20 + "End CDN/WAF Finger Matching" + "-"*19)
+    return CWFinger.result
 
 @app.task
 def SubdomainScan_T():

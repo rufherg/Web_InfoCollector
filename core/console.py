@@ -58,7 +58,7 @@ def Console():
     passive_modules.add_argument('-subdomain',dest="subdomain",help="子域名收集")
     passive_modules.add_argument('-whois', dest="whois",help="Whois查询",action="store_true")
     passive_modules.add_argument('-cidr', dest="cidr",help="C段扫描")
-    passive_modules.add_argument('-gsil',dest="gsil",help="Github敏感信息收集")
+    # passive_modules.add_argument('-gsil',dest="gsil",help="Github敏感信息收集")
 
     #数据处理模块
     # data_modules.add_argument('-xls',dest="xls",help="将数据导出为excel")
@@ -102,14 +102,19 @@ def Console():
     start_time = datetime.datetime.now()
 
     if args.portscan:
-        if args.cms:
-            result = (PortScanner_T.s(url, start, end, flag) | WebFinger_T.s(url, flag))()
-            # print(result.get())
+        result = PortScanner_T.delay(url, start, end, flag).get()
+
+    if args.cms:
+        if args.portscan:
+            WebFinger_T.delay(result,url, flag)
         else:
-            PortScanner_T.delay(url, start, end, flag)
+            WebFinger_T.delay([i for i in range(start,end + 1)],url, flag)
 
     if args.cdnwaf:
-        CDN_WAF_Finger_T.delay()
+        if args.portscan:
+            CDN_WAF_Finger_T.delay(result,url)
+        else:
+            CDN_WAF_Finger_T.delay([i for i in range(start,end + 1)],url)
 
     if args.subdomain:
         SubdomainScan_T.delay()
@@ -120,8 +125,8 @@ def Console():
     if args.cidr:
         CIDR_Scan_T.delay()
 
-    if args.gsil:
-        GSIL_Scan_T.delay()
+    # if args.gsil:
+    #     GSIL_Scan_T.delay()
 
     spend_time = (datetime.datetime.now() - start_time).seconds
     print("Total time: " + str(spend_time) + " seconds")
