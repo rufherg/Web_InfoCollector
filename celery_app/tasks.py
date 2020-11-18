@@ -17,18 +17,23 @@ from plugins.WebFinger import *
 from plugins.Whois_Scan import *
 from plugins.CDN_WAF_Finger import *
 from plugins.C_Scanner import *
+from plugins.Subdomain import *
 
 @app.task
 def PortScanner_T(url, start, end, flag):
-    PScan = PortScanner(url, start, end, flag)
     print("-"*25 + "Start PortScanner" + "-"*25)
+
+    PScan = PortScanner(url, start, end, flag)
     if PScan.threading():
+
         print("-"*27 + "End PortScanner" + "-"*25)
+        
     return PScan.result
 
 @app.task
 def WebFinger_T(port, url, flag):
     print("-"*21 + "Start WebFinger Matching" + "-"*21)
+
     for i in port:
         host = url + ":" + str(i)
         #host = url
@@ -44,11 +49,13 @@ def WebFinger_T(port, url, flag):
             raise(e)
 
     print("-"*23 + "End WebFinger Matching" + "-"*21)
+
     return WFinger.result
 
 @app.task
 def CDN_WAF_Finger_T(port,url):
     print("-"*19 + "Start CDN/WAF Finger Matching" + "-"*18)
+
     for i in port:
         host = url + ":" + str(i)
         try:
@@ -64,12 +71,23 @@ def CDN_WAF_Finger_T(port,url):
             raise(e)
 
     print("-"*20 + "End CDN/WAF Finger Matching" + "-"*19)
+
     return CWFinger.result
 
 @app.task
-def SubdomainScan_T():
+def SubdomainScan_T(url,flag):
     print("-"*22 + "Start Subdomain Scan" + "-"*22)
+    try:
+        SubScan = Subdomain(url,flag)
+        if SubScan.threading():
+            for data in SubScan.result:
+                print("[+] " + data)
+    except Exception as e:
+        raise(e)
+
     print("-"*23 + "End Subdomain Scan" + "-"*23)
+
+    return SubScan.result
 
 @app.task
 def Whois_Scan_T(url):

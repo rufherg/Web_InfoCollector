@@ -55,7 +55,7 @@ def Console():
     active_modules.add_argument('-cdnwaf',dest="cdnwaf",help="CDN/waf识别",action="store_true")
 
     #被动式收集模块
-    passive_modules.add_argument('-subdomain',dest="subdomain",help="子域名收集")
+    passive_modules.add_argument('-subdomain',dest="subdomain",help="子域名收集",action="store_true")
     passive_modules.add_argument('-whois', dest="whois",help="Whois查询",action="store_true")
     passive_modules.add_argument('-cscan', dest="cscan",help="C段扫描",action="store_true")
     # passive_modules.add_argument('-gsil',dest="gsil",help="Github敏感信息收集")
@@ -132,7 +132,12 @@ def Console():
         print("[+]Banner: " + result)
 
     if args.subdomain:
-        SubdomainScan_T.delay()
+        SS_result = SubdomainScan_T.delay(url,flag).get()
+
+        print("-"*20 + "Subdomain Result" + "-"*20)
+        for data in SS_result:
+            print("[+] " + data)
+        print("[+] Total: " + str(len(SS_result)))
 
     if args.whois:
         WS_result = Whois_Scan_T.delay(url).get()
