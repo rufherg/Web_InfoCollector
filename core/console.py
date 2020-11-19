@@ -48,7 +48,7 @@ def Console():
     parser.add_argument('-p','--port',dest="port",default="1-65535",help='待扫描的端口范围(默认1-65535)')
     parser.add_argument('-m','--max',dest="max",default=None,help='最高线程模式(max=100)',action="store_true")
     parser.add_argument('-i','--init',dest="init",default=None,help='初始化环境(Redis/Celery/All)[小写]',type=str)
-    
+
     #主动式收集模块
     active_modules.add_argument('-cms',dest="cms",help="Web应用指纹识别",action="store_true")
     active_modules.add_argument('-portscan',dest="portscan",help="端口扫描",action="store_true")
@@ -85,11 +85,11 @@ def Console():
                 print("Args for Port ERROR!")
                 exit()
             else:
-                start = port[0]
-                end = port[1]
+                start = int(port[0])
+                end = int(port[1])
         except:
-            start = args.port
-            end = args.port
+            start = int(args.port)
+            end = int(args.port)
 
     if args.init == 'redis':
         init_redis()
@@ -117,7 +117,10 @@ def Console():
 
         print("-"*20 + "WebFinger Result" + "-"*20)
         print("[+]Target: " + url)
-        print("[+]Banner: " + (i+" " for i in WF_result))
+        banner = ""
+        for i in WF_result:
+            banner += i + " "
+        print("[+]Banner: " + banner)
 
     if args.cdnwaf:
         if args.portscan:
@@ -127,9 +130,10 @@ def Console():
 
         print("-"*21 + "CDN/WAF Result" + "-"*21)
         print("[+]Target: " + url)
+        banner = ""
         for i in CW_result:
-            result = i + " "
-        print("[+]Banner: " + result)
+            banner += i + " "
+        print("[+]Banner: " + banner)
 
     if args.subdomain:
         SS_result = SubdomainScan_T.delay(url,flag).get()

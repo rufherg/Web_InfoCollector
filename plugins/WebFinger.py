@@ -20,6 +20,8 @@ import threading
 from socket import *
 from bs4 import BeautifulSoup
 
+requests.packages.urllib3.disable_warnings()
+
 class WebFinger():
     def __init__(self, host, flag):
         self.host = "http://" + host
@@ -32,8 +34,6 @@ class WebFinger():
             self.threads = 50
         else:
             self.threads = 30
-
-    requests.packages.urllib3.disable_warnings()
 
     def run(self):
         print("-"*21 + "Start WebFinger Matching" + "-"*21)
